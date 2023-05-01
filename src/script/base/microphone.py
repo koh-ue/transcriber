@@ -29,7 +29,7 @@ parser.add_argument('-w', '--wav_file_name', type=str, default='', help='WAV_FIL
 args = parser.parse_args()
 
 def GetMicIndex():
-    ''' マイクチャンネルのindexをリストで取得する '''
+    # NOTE: Get microphones' channel indices 
  
     # 最大入力チャンネル数が0でない項目をマイクチャンネルとしてリストに追加
     pa = pyaudio.PyAudio()
