@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(add_help=True)
 
 parser.add_argument('-f', '--file_name', type=str, default='')
 parser.add_argument('-m', '--model', choices=['tiny', 'base', 'small', 'medium', 'large'], default='base')
-
+parser.add_argument("-l", "--language", type=str, default='en')
 args = parser.parse_args()
 
 class Whisperancript:
@@ -72,9 +72,10 @@ class Whisperancript:
 
 if __name__ == '__main__':
 	model = Whisperancript(args.file_name)
-	model.any2wav()
+	if os.path.splitext(args.file_name)[-1] != '.wav':
+		model.any2wav()
 
-	result, raw_file_name = model.load_transcript(lang='en')
+	result, raw_file_name = model.load_transcript(lang=args.language)
 	model.print_lines(result)
 	
 	# pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization", use_auth_token='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')

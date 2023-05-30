@@ -31,7 +31,7 @@ parser = argparse.ArgumentParser(add_help=True)
 
 parser.add_argument("-i", "--input_file", type=str, required=True)
 parser.add_argument("-b", "--bucket_name", type=str, default="audio-recorder")
-parser.add_argument("-l", "--language", type=str, default='en-US', help="Available languages are liseted in LANGUAGES. Please use .html for searching.")
+parser.add_argument("-l", "--language", type=str, default='en-US', help="Available languages are liseted in https://cloud.google.com/speech-to-text/docs/languages?hl=ja")
 #parser.add_argument("--condition", type=str, choices=["sunny", "rainy", "cloudy"], default="sunny")
 #parser.add_argument("--is_competition", action="store_true")
 
@@ -100,7 +100,8 @@ def transcribe_long_file_from_gcs(gcs_uri, sample_rate, lang, num_channels): # U
 if __name__ == '__main__':
     destination_info = {
         "Input File": args.input_file,
-        "Base File Name": os.path.splitext(os.path.basename(args.input_file))[0],
+        "Language": args.language,
+        "Output Name": f"s2t-{os.path.splitext(os.path.basename(args.input_file))[0]}_{args.language}",
         "Bucket Name": args.bucket_name,
         "Blob Name": os.path.basename(args.input_file),
         "Gcs Url": f'gs://{args.bucket_name}/{os.path.basename(args.input_file)}',
@@ -109,29 +110,36 @@ if __name__ == '__main__':
     print_json(json.dumps(destination_info, indent=4))
 
     wav_info = get_wav_info(args.input_file)
-    save_pkl = destination_info["Save Directory"]+"/"+destination_info["Base File Name"]+".pkl"
+    save_pkl = f"{destination_info['Save Directory']}/{destination_info['Output Name']}.pkl"
     is_pkl = os.path.isfile(save_pkl)
 
     if is_pkl:
+        print("pkl Already exsits ...")
         df_transcript = pd.read_pickle(save_pkl)
     else:
         try:
-            df_transcript = transcribe_long_file_from_gcs(gcs_uri=destination_info["Gcs Url"], sample_rate=wav_info["Sample Rate"], lang=args.language, num_channels=wav_info["Number of Channels"])
+            df_transcript = transcribe_long_file_from_gcs(gcs_uri=destination_info["Gcs Url"], 
+                                                          sample_rate=wav_info["Sample Rate"], 
+                                                          lang=args.language, 
+                                                          num_channels=wav_info["Number of Channels"])
         except NotFound:
-            upload_blob(bucket_name=destination_info["Bucket Name"],source_file_name=destination_info["Input File"],destination_blob_name=destination_info["Blob Name"])
+            upload_blob(bucket_name=destination_info["Bucket Name"],
+                        source_file_name=destination_info["Input File"],
+                        destination_blob_name=destination_info["Blob Name"])
             
-            df_transcript = transcribe_long_file_from_gcs(gcs_uri=destination_info["Gcs Url"],sample_rate=wav_info["Sample Rate"],lang=args.language,num_channels=wav_info["Number of Channels"])
+            df_transcript = transcribe_long_file_from_gcs(gcs_uri=destination_info["Gcs Url"],
+                                                          sample_rate=wav_info["Sample Rate"],
+                                                          lang=args.language,num_channels=wav_info["Number of Channels"])
     
         df_transcript.to_pickle(save_pkl)
     
 
     # INTENT: Following codes are for generating script text. You can change following codes flexibly.
 
-    df_formatted = df_transcript[df_transcript["Channel Tag"] == 1]
+    df_formatted = df_transcript #[df_transcript["Channel Tag"] == 0]
     transcript_list = df_formatted["Transcript"].to_list()
 
-    txt_file = destination_info["Save Directory"]+'/transcript_raw.txt'
-
+    txt_file = destination_info["Save Directory"] + f'/{destination_info["Output Name"]}.txt'
     with open(txt_file, "w") as f:
         f.write('\n\n'.join(transcript_list))
 
