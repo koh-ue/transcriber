@@ -13,8 +13,8 @@ import argparse
 
 parser = argparse.ArgumentParser(add_help=True)
 
-parser.add_argument('-f', '--file_name', type=str, default='')
-parser.add_argument('-m', '--model', choices=['tiny', 'base', 'small', 'medium', 'large'], default='base')
+parser.add_argument('-f', '--file-name', dest="file_name", type=str, default='')
+parser.add_argument('-m', '--model', default='base')
 parser.add_argument("-l", "--language", type=str, default='en')
 args = parser.parse_args()
 
