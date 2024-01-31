@@ -1,0 +1,37 @@
+disable_existing_loggers: false
+formatters:
+  simple:
+    format: '%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s'
+  stdout:
+    format: '%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s'
+handlers:
+  consoleHandler:
+    class: logging.StreamHandler
+    formatter: stdout
+    stream: ext://sys.stdout
+  fileHandler:
+    class: logging.FileHandler
+    filename: to be replaced
+    formatter: simple
+loggers:
+  __main__:
+    handlers:
+    - consoleHandler
+    - fileHandler
+    level: DEBUG
+    propagate: false
+  lower.sub:
+    handlers:
+    - consoleHandler
+    - fileHandler
+    level: DEBUG
+    propagate: false
+  same_hierarchy:
+    handlers:
+    - consoleHandler
+    - fileHandler
+    level: DEBUG
+    propagate: false
+root:
+  level: INFO
+version: 1
